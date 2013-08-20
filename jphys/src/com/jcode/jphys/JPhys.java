@@ -36,7 +36,7 @@ public class JPhys extends ApplicationAdapter {
 
 	private static final float VIEWPORT_WIDTH = 10;
 	private static final float BALL_RADIUS = 0.15f;
-	private static final int MAX_BALLS = 2;
+	private static final int MAX_BALLS = 3;
 
 	// Models
 	private World world;
