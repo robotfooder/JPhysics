@@ -9,6 +9,7 @@ import aurelienribon.tweenengine.TweenManager;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL10;
@@ -35,8 +36,8 @@ public class JPhys extends ApplicationAdapter {
 	// -------------------------------------------------------------------------
 
 	private static final float VIEWPORT_WIDTH = 10;
-	private static final float BALL_RADIUS = 0.15f;
-	private static final int MAX_BALLS = 4;
+	private static final float BALL_RADIUS = 0.3f;
+	private static final int MAX_BALLS = 1;
 
 	// Models
 	private World world;
@@ -89,6 +90,7 @@ public class JPhys extends ApplicationAdapter {
 				restart();
 				return true;
 			}
+
 		});
 
 		// Run
@@ -124,7 +126,7 @@ public class JPhys extends ApplicationAdapter {
 
 		FixtureDef fd = new FixtureDef();
 		fd.density = 1;
-		fd.friction = 0.5f;
+		fd.friction = 0.9f;
 		fd.restitution = 0.5f;
 		fd.shape = shape;
 
@@ -170,6 +172,14 @@ public class JPhys extends ApplicationAdapter {
 		float w = Gdx.graphics.getWidth();
 		float h = Gdx.graphics.getHeight();
 
+		if (Gdx.input.isKeyPressed(Keys.DPAD_LEFT)) {
+			pushBalls(new Vector2(-2, 0));
+		}
+
+		if (Gdx.input.isKeyPressed(Keys.DPAD_RIGHT)) {
+			pushBalls(new Vector2(2, 0));
+		}
+
 		// Update
 		tweenManager.update(1 / 60f);
 		world.step(1 / 60f, 10, 10);
@@ -197,7 +207,17 @@ public class JPhys extends ApplicationAdapter {
 		batch.getProjectionMatrix().setToOrtho2D(0, 0, w, h);
 		batch.begin();
 		font.draw(batch, "Touch the screen to restart", 5, h - 5);
+		for (int i = 0; i < MAX_BALLS; i++)
+			font.draw(batch, ballModels[i].getLinearVelocity().toString(), 5, h- (i+2)*10);
 		batch.end();
+	}
+
+	private void pushBalls(Vector2 vector2) {
+		for (int i = 0; i < MAX_BALLS; i++) {
+			ballModels[i].applyForceToCenter(vector2);
+
+		}
+
 	}
 
 	private void restart() {
