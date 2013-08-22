@@ -37,7 +37,7 @@ public class JPhys extends ApplicationAdapter {
 
 	private static final float VIEWPORT_WIDTH = 10;
 	private static final float BALL_RADIUS = 0.3f;
-	private static final int MAX_BALLS = 3;
+	private static final int MAX_BALLS = 1;
 
 	// Models
 	private World world;
@@ -156,7 +156,7 @@ public class JPhys extends ApplicationAdapter {
 		groundSprite = new Sprite(whiteTexture);
 		groundSprite.setSize(VIEWPORT_WIDTH, 1);
 		groundSprite.setPosition(-VIEWPORT_WIDTH / 2, 0);
-		groundSprite.setColor(Color.BLACK);
+		groundSprite.setColor(Color.BLUE);
 	}
 
 	@Override
@@ -208,8 +208,9 @@ public class JPhys extends ApplicationAdapter {
 		batch.begin();
 		font.draw(batch, "Touch the screen to restart", 5, h - 5);
 		for (int i = 0; i < MAX_BALLS; i++)
-			font.draw(batch, ballModels[i].getLinearVelocity().toString(), 5, h
-					- (i + 2) * 10);
+			font.draw(batch, "Speed: "
+					+ ballModels[i].getLinearVelocity().toString() + " Angle: "
+					+ ballModels[i].getAngle(), 5, h - (i + 2) * 15);
 		batch.end();
 	}
 
