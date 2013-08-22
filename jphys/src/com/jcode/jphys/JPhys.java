@@ -208,7 +208,8 @@ public class JPhys extends ApplicationAdapter {
 		batch.begin();
 		font.draw(batch, "Touch the screen to restart", 5, h - 5);
 		for (int i = 0; i < MAX_BALLS; i++)
-			font.draw(batch, ballModels[i].getLinearVelocity().toString(), 5, h- (i+2)*10);
+			font.draw(batch, ballModels[i].getLinearVelocity().toString(), 5, h
+					- (i + 2) * 10);
 		batch.end();
 	}
 
