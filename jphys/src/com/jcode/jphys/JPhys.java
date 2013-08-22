@@ -2,6 +2,7 @@ package com.jcode.jphys;
 
 import java.util.Random;
 
+import aurelienribon.bodyeditor.BodyEditorLoader;
 import aurelienribon.tweenengine.BaseTween;
 import aurelienribon.tweenengine.Tween;
 import aurelienribon.tweenengine.TweenCallback;
@@ -35,15 +36,20 @@ public class JPhys extends ApplicationAdapter {
 	// Static fields
 	// -------------------------------------------------------------------------
 
-	private static final float VIEWPORT_WIDTH = 10;
-	private static final float BALL_RADIUS = 0.3f;
-	private static final int MAX_BALLS = 1;
+	private static final float VIEWPORT_WIDTH = 15;
+	private static final float BALL_RADIUS = 0.15f;
+	private static final float BOTTLE_WIDTH = 8;
+	private static final int MAX_BALLS = 100;
 
 	// Models
 	private World world;
+	private Body bottleModel;
+	private Vector2 bottleModelOrigin;
 	private Body[] ballModels;
 
 	// Render
+	private Texture bottleTexture;
+	private Sprite bottleSprite;
 	private Texture ballTexture;
 	private Sprite[] ballSprites;
 	private Texture whiteTexture;
@@ -65,6 +71,7 @@ public class JPhys extends ApplicationAdapter {
 		world = new World(new Vector2(0, -10), true);
 
 		createGround();
+		createBottle(); // <-- this method uses the BodyEditorLoader class
 		createBalls();
 
 		// Render initialization
@@ -126,7 +133,7 @@ public class JPhys extends ApplicationAdapter {
 
 		FixtureDef fd = new FixtureDef();
 		fd.density = 1;
-		fd.friction = 0.9f;
+		fd.friction = 0.5f;
 		fd.restitution = 0.5f;
 		fd.shape = shape;
 
@@ -139,7 +146,39 @@ public class JPhys extends ApplicationAdapter {
 		shape.dispose();
 	}
 
+	private void createBottle() {
+		// 0. Create a loader for the file saved from the editor.
+		BodyEditorLoader loader = new BodyEditorLoader(
+				Gdx.files.internal("data/test.json"));
+
+		// 1. Create a BodyDef, as usual.
+		BodyDef bd = new BodyDef();
+		bd.type = BodyType.DynamicBody;
+
+		// 2. Create a FixtureDef, as usual.
+		FixtureDef fd = new FixtureDef();
+		fd.density = 1;
+		fd.friction = 0.5f;
+		fd.restitution = 0.3f;
+
+		// 3. Create a Body, as usual.
+		bottleModel = world.createBody(bd);
+
+		// 4. Create the body fixture automatically by using the loader.
+		loader.attachFixture(bottleModel, "test01", fd, BOTTLE_WIDTH);
+		bottleModelOrigin = loader.getOrigin("test01", BOTTLE_WIDTH).cpy();
+	}
+
 	private void createSprites() {
+
+		bottleTexture = new Texture(Gdx.files.internal("data/gfx/bottle.png"));
+		bottleTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+
+		bottleSprite = new Sprite(bottleTexture);
+		bottleSprite.setSize(
+				BOTTLE_WIDTH,
+				BOTTLE_WIDTH * bottleSprite.getHeight()
+						/ bottleSprite.getWidth());
 
 		ballTexture = new Texture(Gdx.files.internal("data/gfx/ball.png"));
 		ballTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
@@ -161,6 +200,7 @@ public class JPhys extends ApplicationAdapter {
 
 	@Override
 	public void dispose() {
+		bottleTexture.dispose();
 		ballTexture.dispose();
 		batch.dispose();
 		font.dispose();
@@ -184,6 +224,12 @@ public class JPhys extends ApplicationAdapter {
 		tweenManager.update(1 / 60f);
 		world.step(1 / 60f, 10, 10);
 
+		Vector2 bottlePos = bottleModel.getPosition().sub(bottleModelOrigin);
+		bottleSprite.setPosition(bottlePos.x, bottlePos.y);
+		bottleSprite.setOrigin(bottleModelOrigin.x, bottleModelOrigin.y);
+		bottleSprite.setRotation(bottleModel.getAngle()
+				* MathUtils.radiansToDegrees);
+
 		for (int i = 0; i < MAX_BALLS; i++) {
 			Vector2 ballPos = ballModels[i].getPosition();
 			ballSprites[i].setPosition(ballPos.x - ballSprites[i].getWidth()
@@ -200,6 +246,7 @@ public class JPhys extends ApplicationAdapter {
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 		groundSprite.draw(batch);
+		bottleSprite.draw(batch);
 		for (int i = 0; i < MAX_BALLS; i++)
 			ballSprites[i].draw(batch);
 		batch.end();
@@ -207,10 +254,10 @@ public class JPhys extends ApplicationAdapter {
 		batch.getProjectionMatrix().setToOrtho2D(0, 0, w, h);
 		batch.begin();
 		font.draw(batch, "Touch the screen to restart", 5, h - 5);
-		for (int i = 0; i < MAX_BALLS; i++)
-			font.draw(batch, "Speed: "
-					+ ballModels[i].getLinearVelocity().toString() + " Angle: "
-					+ ballModels[i].getAngle(), 5, h - (i + 2) * 15);
+//		for (int i = 0; i < MAX_BALLS; i++)
+//			font.draw(batch, "Speed: "
+//					+ ballModels[i].getLinearVelocity().toString() + " Angle: "
+//					+ ballModels[i].getAngle(), 5, h - (i + 2) * 15);
 		batch.end();
 	}
 
@@ -223,6 +270,10 @@ public class JPhys extends ApplicationAdapter {
 	}
 
 	private void restart() {
+
+		bottleModel.setTransform(0, 1, 0);
+		bottleModel.setLinearVelocity(0, 0);
+		bottleModel.setAngularVelocity(0);
 
 		Vector2 vec = new Vector2();
 
