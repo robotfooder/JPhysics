@@ -40,7 +40,7 @@ public class JPhys extends ApplicationAdapter {
 	private static final float BALL_RADIUS = 0.15f;
 	private static final float BOTTLE_WIDTH = 8;
 	private static final float BOX_WIDTH = 1;
-	private static final int MAX_BALLS = 5;
+	private static final int MAX_BALLS = 150;
 
 	// Models
 	private World world;
