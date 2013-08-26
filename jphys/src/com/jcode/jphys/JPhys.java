@@ -29,6 +29,7 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.jcode.jphys.physics.RectObject;
 
 public class JPhys extends ApplicationAdapter {
 
@@ -40,14 +41,15 @@ public class JPhys extends ApplicationAdapter {
 	private static final float BALL_RADIUS = 0.15f;
 	private static final float BOTTLE_WIDTH = 8;
 	private static final float BOX_WIDTH = 1;
-	private static final int MAX_BALLS = 150;
+	private static final int MAX_BALLS = 15;
 
 	// Models
 	private World world;
 	private Body bottleModel;
 	private Vector2 bottleModelOrigin;
 	private Body[] ballModels;
-	private Body boxModel;
+	// private Body boxModel;
+	private RectObject rectObject;
 
 	// Render
 	private Texture bottleTexture;
@@ -56,7 +58,7 @@ public class JPhys extends ApplicationAdapter {
 	private Sprite[] ballSprites;
 	private Texture whiteTexture;
 	private Sprite groundSprite;
-	private Sprite boxSprite;
+	//private Sprite boxSprite;
 
 	// Render general
 	private SpriteBatch batch;
@@ -66,11 +68,10 @@ public class JPhys extends ApplicationAdapter {
 	// Misc
 	private final TweenManager tweenManager = new TweenManager();
 	private final Random rand = new Random();
-	private boolean doBottle = true;
+	private boolean doBottle = false;
 	private boolean doBox = true;
 	final short GROUP_BALLS = 1;
 	final short GROUP_Things = -1;
-	
 
 	@Override
 	public void create() {
@@ -117,25 +118,28 @@ public class JPhys extends ApplicationAdapter {
 	}
 
 	private void createBox() {
-		BodyDef bd = new BodyDef();
-		bd.position.set(0, 0);
-		bd.type = BodyType.StaticBody;
-
-		PolygonShape shape = new PolygonShape();
-		shape.setAsBox(BOX_WIDTH, BOX_WIDTH);
-
-		FixtureDef fd = new FixtureDef();
-		fd.density = 1;
-		fd.friction = 0.5f;
-		fd.restitution = 0.5f;
-		fd.shape = shape;
-		fd.filter.groupIndex = GROUP_Things;
-		
-		boxModel = world.createBody(bd);
-
-		boxModel.createFixture(fd);
-
-		shape.dispose();
+		// BodyDef bd = new BodyDef();
+		// bd.position.set(0, 0);
+		// bd.type = BodyType.StaticBody;
+		//
+		// PolygonShape shape = new PolygonShape();
+		// shape.setAsBox(BOX_WIDTH, BOX_WIDTH);
+		//
+		// FixtureDef fd = new FixtureDef();
+		// fd.density = 1;
+		// fd.friction = 0.5f;
+		// fd.restitution = 0.5f;
+		// fd.shape = shape;
+		// fd.filter.groupIndex = GROUP_Things;
+		//
+		// boxModel = world.createBody(bd);
+		//
+		// boxModel.createFixture(fd);
+		//
+		// shape.dispose();
+		this.rectObject = new RectObject(new Vector2(5, 3), world, 0,
+				GROUP_Things, BodyType.StaticBody, 0.1f);
+		this.rectObject.setFixture(BOX_WIDTH, BOX_WIDTH, 1, 0.5f, 0.5f);
 
 	}
 
@@ -170,7 +174,7 @@ public class JPhys extends ApplicationAdapter {
 		fd.friction = 0.5f;
 		fd.restitution = 0.5f;
 		fd.shape = shape;
-		fd.filter.groupIndex=GROUP_BALLS;
+		fd.filter.groupIndex = GROUP_BALLS;
 
 		ballModels = new Body[MAX_BALLS];
 		for (int i = 0; i < MAX_BALLS; i++) {
@@ -232,11 +236,12 @@ public class JPhys extends ApplicationAdapter {
 		groundSprite.setSize(VIEWPORT_WIDTH, 1);
 		groundSprite.setPosition(-VIEWPORT_WIDTH / 2, 0);
 		groundSprite.setColor(Color.BLUE);
-		
-		boxSprite = new Sprite(whiteTexture);
-		boxSprite.setSize(BOX_WIDTH*2, BOX_WIDTH*2);
-		boxSprite.setOrigin(BOX_WIDTH, BOX_WIDTH);
-		boxSprite.setColor(Color.RED);
+
+//		boxSprite = new Sprite(whiteTexture);
+//		boxSprite.setSize(BOX_WIDTH * 2, BOX_WIDTH * 2);
+//		boxSprite.setOrigin(BOX_WIDTH, BOX_WIDTH);
+//		boxSprite.setColor(Color.RED);
+		this.rectObject.setSprite(whiteTexture, Color.RED);
 	}
 
 	@Override
@@ -274,11 +279,14 @@ public class JPhys extends ApplicationAdapter {
 			bottleSprite.setRotation(bottleModel.getAngle()
 					* MathUtils.radiansToDegrees);
 		}
-		
-		if (doBox){
-			Vector2 boxPos = boxModel.getPosition();
-			boxSprite.setPosition(boxPos.x-boxSprite.getWidth()/2, boxPos.y-boxSprite.getHeight()/2);
-			boxSprite.setRotation(boxModel.getAngle()*MathUtils.radiansToDegrees);
+
+		if (doBox) {
+//			Vector2 boxPos = boxModel.getPosition();
+//			boxSprite.setPosition(boxPos.x - boxSprite.getWidth() / 2, boxPos.y
+//					- boxSprite.getHeight() / 2);
+//			boxSprite.setRotation(boxModel.getAngle()
+//					* MathUtils.radiansToDegrees);
+			rectObject.update();
 		}
 
 		for (int i = 0; i < MAX_BALLS; i++) {
@@ -300,7 +308,8 @@ public class JPhys extends ApplicationAdapter {
 		if (doBottle)
 			bottleSprite.draw(batch);
 		if (doBox)
-			boxSprite.draw(batch);
+//			boxSprite.draw(batch);
+			rectObject.draw(batch);
 		for (int i = 0; i < MAX_BALLS; i++)
 			ballSprites[i].draw(batch);
 		batch.end();
@@ -330,11 +339,11 @@ public class JPhys extends ApplicationAdapter {
 			bottleModel.setLinearVelocity(0, 0);
 			bottleModel.setAngularVelocity(0);
 		}
-		
-		if (doBox){
-			boxModel.setTransform(5, 3, 0.1f);
-			boxModel.setLinearVelocity(0, 0);
-			boxModel.setAngularVelocity(0);
+
+		if (doBox) {
+//			boxModel.setTransform(5, 3, 0.1f);
+//			boxModel.setLinearVelocity(0, 0);
+//			boxModel.setAngularVelocity(0);
 		}
 
 		Vector2 vec = new Vector2();

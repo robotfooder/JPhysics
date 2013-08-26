@@ -1,0 +1,70 @@
+package com.jcode.jphys.physics;
+
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.World;
+
+public class RectObject extends BaseBoxObject {
+
+	private float height;
+	private float width;
+
+	public RectObject(Vector2 pos, World world, int boxIndex,
+			int collisionGroup, BodyType bodyType, float angle) {
+		super(pos, world, boxIndex, collisionGroup, bodyType, angle);
+
+	}
+
+	public void setFixture(float width, float height, float density,
+			float friction, float restitution) {
+		PolygonShape bodyShape = new PolygonShape();
+
+		this.width = width;
+		this.height = height;
+		bodyShape.setAsBox(this.width, this.height);
+
+		FixtureDef fixtureDef = new FixtureDef();
+		fixtureDef.density = density;
+		fixtureDef.friction = friction;
+		fixtureDef.restitution = restitution;
+		fixtureDef.shape = bodyShape;
+
+		super.setFixture(fixtureDef);
+
+	}
+
+	public void draw(SpriteBatch sp) {
+		this.sprite.draw(sp);
+	}
+
+	public void update() {
+		super.updateWorldPosition();
+		this.sprite.setPosition(this.worldPosition.x, this.worldPosition.y);
+		this.sprite.setRotation(this.body.getAngle()
+				* MathUtils.radiansToDegrees);
+	}
+
+	public void setSprite(Texture texture,
+			 Color color) {
+		this.sprite = new Sprite(texture);
+		this.sprite.setSize(this.width*2, this.height*2);
+		this.sprite.setOrigin(this.width, this.height);
+		this.sprite.setColor(color);
+	}
+
+	public float getHeight() {
+		return height;
+	}
+
+	public float getWidth() {
+		return width;
+	}
+
+}
