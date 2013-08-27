@@ -2,7 +2,6 @@ package com.jcode.jphys.physics;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -11,17 +10,30 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
+/**
+ * @author jakobssonje
+ * 
+ */
 public class RectObject extends BaseBoxObject {
 
 	private float height;
 	private float width;
 
 	public RectObject(Vector2 pos, World world, int boxIndex,
-			int collisionGroup, BodyType bodyType, float angle) {
-		super(pos, world, boxIndex, collisionGroup, bodyType, angle);
+			int collisionGroup, BodyType bodyType, float angle, Texture texture) {
+		super(pos, world, boxIndex, collisionGroup, bodyType, angle, texture);
 
 	}
 
+	/**
+	 * @param width
+	 * @param height
+	 * @param density
+	 * @param friction
+	 * @param restitution
+	 *            Use this when creating a square independent from the sprite
+	 *            ratio
+	 */
 	public void setFixture(float width, float height, float density,
 			float friction, float restitution) {
 		PolygonShape bodyShape = new PolygonShape();
@@ -38,6 +50,16 @@ public class RectObject extends BaseBoxObject {
 
 		super.setFixture(fixtureDef);
 
+		this.sprite.setSize(this.width * 2, this.height * 2);
+		this.sprite.setOrigin(this.width, this.height);
+
+	}
+
+	public void setFixture(float width, float density, float friction,
+			float restitution) {
+		setFixture(width, width * this.spriteRatio, density, friction,
+				restitution);
+
 	}
 
 	public void draw(SpriteBatch sp) {
@@ -51,11 +73,7 @@ public class RectObject extends BaseBoxObject {
 				* MathUtils.radiansToDegrees);
 	}
 
-	public void setSprite(Texture texture,
-			 Color color) {
-		this.sprite = new Sprite(texture);
-		this.sprite.setSize(this.width*2, this.height*2);
-		this.sprite.setOrigin(this.width, this.height);
+	public void setSpriteColor(Color color) {
 		this.sprite.setColor(color);
 	}
 

@@ -1,6 +1,6 @@
 package com.jcode.jphys.physics;
 
-import com.badlogic.gdx.graphics.Color;
+
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
@@ -17,6 +17,7 @@ public class BaseBoxObject {
 	protected BoxUserData userData;
 	protected Sprite sprite;
 	protected int bodyShape;
+	protected float spriteRatio;
 
 	static final float WORLD_TO_BOX = 0.01f;
 	static final float BOX_TO_WORLD = 100f;
@@ -30,11 +31,13 @@ public class BaseBoxObject {
 	// }
 
 	public BaseBoxObject(Vector2 pos, World world, int boxIndex,
-			int collisionGroup, BodyType bodyType, float angle) {
+			int collisionGroup, BodyType bodyType, float angle, Texture texture) {
 		this.userData = new BoxUserData(boxIndex, collisionGroup);
 		this.worldPosition = new Vector2();
 		createBody(world, pos, angle, bodyType);
 		this.body.setUserData(this.userData);
+		this.sprite = new Sprite(texture);
+		this.spriteRatio = this.sprite.getHeight()/this.sprite.getWidth();
 
 	}
 

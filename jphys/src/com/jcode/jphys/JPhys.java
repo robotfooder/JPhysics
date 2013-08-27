@@ -40,7 +40,8 @@ public class JPhys extends ApplicationAdapter {
 	private static final float VIEWPORT_WIDTH = 15;
 	private static final float BALL_RADIUS = 0.15f;
 	private static final float BOTTLE_WIDTH = 8;
-	private static final float BOX_WIDTH = 1;
+	private static final float SQUARE_WIDTH = 1;
+	private static final float RECT_WIDTH = 2;
 	private static final int MAX_BALLS = 15;
 
 	// Models
@@ -49,6 +50,7 @@ public class JPhys extends ApplicationAdapter {
 	private Vector2 bottleModelOrigin;
 	private Body[] ballModels;
 	// private Body boxModel;
+	private RectObject squareObject;
 	private RectObject rectObject;
 
 	// Render
@@ -57,8 +59,9 @@ public class JPhys extends ApplicationAdapter {
 	private Texture ballTexture;
 	private Sprite[] ballSprites;
 	private Texture whiteTexture;
+	private Texture rectTexture;
 	private Sprite groundSprite;
-	//private Sprite boxSprite;
+	// private Sprite boxSprite;
 
 	// Render general
 	private SpriteBatch batch;
@@ -78,6 +81,9 @@ public class JPhys extends ApplicationAdapter {
 		// Models initialization
 
 		world = new World(new Vector2(0, -10), true);
+		whiteTexture = new Texture(Gdx.files.internal("data/gfx/white.png"));
+		rectTexture = new Texture(Gdx.files.internal("data/gfx/rect.png"));
+		rectTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 
 		createGround();
 		if (doBottle)
@@ -137,9 +143,12 @@ public class JPhys extends ApplicationAdapter {
 		// boxModel.createFixture(fd);
 		//
 		// shape.dispose();
-		this.rectObject = new RectObject(new Vector2(5, 3), world, 0,
-				GROUP_Things, BodyType.StaticBody, 0.1f);
-		this.rectObject.setFixture(BOX_WIDTH, BOX_WIDTH, 1, 0.5f, 0.5f);
+		this.squareObject = new RectObject(new Vector2(5, 3), world, 0,
+				GROUP_Things, BodyType.StaticBody, 0.1f, whiteTexture);
+		this.squareObject.setFixture(SQUARE_WIDTH, SQUARE_WIDTH, 1, 0.5f, 0.5f);
+		this.rectObject = new RectObject(new Vector2(0, 5), world, 1, 0,
+				BodyType.StaticBody, 0.2f, rectTexture);
+		this.rectObject.setFixture(RECT_WIDTH, 1, 0.5f, 0.5f);
 
 	}
 
@@ -230,18 +239,16 @@ public class JPhys extends ApplicationAdapter {
 			ballSprites[i].setOrigin(BALL_RADIUS, BALL_RADIUS);
 		}
 
-		whiteTexture = new Texture(Gdx.files.internal("data/gfx/white.png"));
-
 		groundSprite = new Sprite(whiteTexture);
 		groundSprite.setSize(VIEWPORT_WIDTH, 1);
 		groundSprite.setPosition(-VIEWPORT_WIDTH / 2, 0);
 		groundSprite.setColor(Color.BLUE);
 
-//		boxSprite = new Sprite(whiteTexture);
-//		boxSprite.setSize(BOX_WIDTH * 2, BOX_WIDTH * 2);
-//		boxSprite.setOrigin(BOX_WIDTH, BOX_WIDTH);
-//		boxSprite.setColor(Color.RED);
-		this.rectObject.setSprite(whiteTexture, Color.RED);
+		// boxSprite = new Sprite(whiteTexture);
+		// boxSprite.setSize(BOX_WIDTH * 2, BOX_WIDTH * 2);
+		// boxSprite.setOrigin(BOX_WIDTH, BOX_WIDTH);
+		// boxSprite.setColor(Color.RED);
+		this.squareObject.setSpriteColor(Color.RED);
 	}
 
 	@Override
@@ -281,11 +288,13 @@ public class JPhys extends ApplicationAdapter {
 		}
 
 		if (doBox) {
-//			Vector2 boxPos = boxModel.getPosition();
-//			boxSprite.setPosition(boxPos.x - boxSprite.getWidth() / 2, boxPos.y
-//					- boxSprite.getHeight() / 2);
-//			boxSprite.setRotation(boxModel.getAngle()
-//					* MathUtils.radiansToDegrees);
+			// Vector2 boxPos = boxModel.getPosition();
+			// boxSprite.setPosition(boxPos.x - boxSprite.getWidth() / 2,
+			// boxPos.y
+			// - boxSprite.getHeight() / 2);
+			// boxSprite.setRotation(boxModel.getAngle()
+			// * MathUtils.radiansToDegrees);
+			squareObject.update();
 			rectObject.update();
 		}
 
@@ -307,9 +316,12 @@ public class JPhys extends ApplicationAdapter {
 		groundSprite.draw(batch);
 		if (doBottle)
 			bottleSprite.draw(batch);
-		if (doBox)
-//			boxSprite.draw(batch);
+		if (doBox) {
+			// boxSprite.draw(batch);
+			squareObject.draw(batch);
 			rectObject.draw(batch);
+		}
+
 		for (int i = 0; i < MAX_BALLS; i++)
 			ballSprites[i].draw(batch);
 		batch.end();
@@ -341,9 +353,9 @@ public class JPhys extends ApplicationAdapter {
 		}
 
 		if (doBox) {
-//			boxModel.setTransform(5, 3, 0.1f);
-//			boxModel.setLinearVelocity(0, 0);
-//			boxModel.setAngularVelocity(0);
+			// boxModel.setTransform(5, 3, 0.1f);
+			// boxModel.setLinearVelocity(0, 0);
+			// boxModel.setAngularVelocity(0);
 		}
 
 		Vector2 vec = new Vector2();
