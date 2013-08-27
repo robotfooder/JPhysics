@@ -2,8 +2,6 @@ package com.jcode.jphys.physics;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
@@ -60,17 +58,6 @@ public class RectObject extends BaseBoxObject {
 		setFixture(width, width * this.spriteRatio, density, friction,
 				restitution);
 
-	}
-
-	public void draw(SpriteBatch sp) {
-		this.sprite.draw(sp);
-	}
-
-	public void update() {
-		super.updateWorldPosition();
-		this.sprite.setPosition(this.worldPosition.x, this.worldPosition.y);
-		this.sprite.setRotation(this.body.getAngle()
-				* MathUtils.radiansToDegrees);
 	}
 
 	public void setSpriteColor(Color color) {

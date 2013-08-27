@@ -7,7 +7,6 @@ import aurelienribon.tweenengine.BaseTween;
 import aurelienribon.tweenengine.Tween;
 import aurelienribon.tweenengine.TweenCallback;
 import aurelienribon.tweenengine.TweenManager;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -18,17 +17,13 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
-import com.badlogic.gdx.physics.box2d.CircleShape;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.jcode.jphys.physics.CircleObject;
+import com.jcode.jphys.physics.CustomObject;
 import com.jcode.jphys.physics.RectObject;
 
 public class JPhys extends ApplicationAdapter {
@@ -39,29 +34,24 @@ public class JPhys extends ApplicationAdapter {
 
 	private static final float VIEWPORT_WIDTH = 15;
 	private static final float BALL_RADIUS = 0.15f;
-	private static final float BOTTLE_WIDTH = 8;
+	private static final float BOTTLE_WIDTH = 7;
 	private static final float SQUARE_WIDTH = 1;
 	private static final float RECT_WIDTH = 2;
 	private static final int MAX_BALLS = 15;
 
 	// Models
 	private World world;
-	private Body bottleModel;
-	private Vector2 bottleModelOrigin;
-	private Body[] ballModels;
-	// private Body boxModel;
-	private RectObject squareObject;
-	private RectObject rectObject;
+	private CircleObject[] balls;
+	private RectObject squareBox;
+	private RectObject rectBox;
+	private RectObject groundBox;
+	private CustomObject bottle;
 
 	// Render
 	private Texture bottleTexture;
-	private Sprite bottleSprite;
 	private Texture ballTexture;
-	private Sprite[] ballSprites;
 	private Texture whiteTexture;
 	private Texture rectTexture;
-	private Sprite groundSprite;
-	// private Sprite boxSprite;
 
 	// Render general
 	private SpriteBatch batch;
@@ -71,8 +61,8 @@ public class JPhys extends ApplicationAdapter {
 	// Misc
 	private final TweenManager tweenManager = new TweenManager();
 	private final Random rand = new Random();
-	private boolean doBottle = false;
-	private boolean doBox = true;
+	private boolean doBottle = true;
+	private boolean doBox = false;
 	final short GROUP_BALLS = 1;
 	final short GROUP_Things = -1;
 
@@ -84,13 +74,17 @@ public class JPhys extends ApplicationAdapter {
 		whiteTexture = new Texture(Gdx.files.internal("data/gfx/white.png"));
 		rectTexture = new Texture(Gdx.files.internal("data/gfx/rect.png"));
 		rectTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+		ballTexture = new Texture(Gdx.files.internal("data/gfx/ball.png"));
+		ballTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+		bottleTexture = new Texture(Gdx.files.internal("data/gfx/bottle.png"));
+		bottleTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 
 		createGround();
 		if (doBottle)
 			createBottle(); // <-- this method uses the BodyEditorLoader class
 		createBalls();
 		if (doBox)
-			createBox();
+			createBoxes();
 
 		// Render initialization
 
@@ -104,8 +98,6 @@ public class JPhys extends ApplicationAdapter {
 		camera = new OrthographicCamera(VIEWPORT_WIDTH, VIEWPORT_WIDTH * h / w);
 		camera.position.set(0, camera.viewportHeight / 2, 0);
 		camera.update();
-
-		createSprites();
 
 		// Input initialization
 
@@ -123,132 +115,46 @@ public class JPhys extends ApplicationAdapter {
 		restart();
 	}
 
-	private void createBox() {
-		// BodyDef bd = new BodyDef();
-		// bd.position.set(0, 0);
-		// bd.type = BodyType.StaticBody;
-		//
-		// PolygonShape shape = new PolygonShape();
-		// shape.setAsBox(BOX_WIDTH, BOX_WIDTH);
-		//
-		// FixtureDef fd = new FixtureDef();
-		// fd.density = 1;
-		// fd.friction = 0.5f;
-		// fd.restitution = 0.5f;
-		// fd.shape = shape;
-		// fd.filter.groupIndex = GROUP_Things;
-		//
-		// boxModel = world.createBody(bd);
-		//
-		// boxModel.createFixture(fd);
-		//
-		// shape.dispose();
-		this.squareObject = new RectObject(new Vector2(5, 3), world, 0,
+	private void createBoxes() {
+
+		this.squareBox = new RectObject(new Vector2(5, 3), world, 0,
 				GROUP_Things, BodyType.StaticBody, 0.1f, whiteTexture);
-		this.squareObject.setFixture(SQUARE_WIDTH, SQUARE_WIDTH, 1, 0.5f, 0.5f);
-		this.rectObject = new RectObject(new Vector2(0, 5), world, 1, 0,
+		this.squareBox.setFixture(SQUARE_WIDTH, SQUARE_WIDTH, 1, 0.5f, 0.5f);
+		this.squareBox.setSpriteColor(Color.RED);
+		this.rectBox = new RectObject(new Vector2(0, 5), world, 1, 0,
 				BodyType.StaticBody, 0.2f, rectTexture);
-		this.rectObject.setFixture(RECT_WIDTH, 1, 0.5f, 0.5f);
+		this.rectBox.setFixture(RECT_WIDTH, 1, 0.5f, 0.5f);
 
 	}
 
 	private void createGround() {
-		BodyDef bd = new BodyDef();
-		bd.position.set(0, 0);
-		bd.type = BodyType.StaticBody;
+		this.groundBox = new RectObject(new Vector2(0, 0.5f), world, 4,
+				GROUP_Things, BodyType.StaticBody, 0, whiteTexture);
+		this.groundBox.setFixture(VIEWPORT_WIDTH, 0.5f, 1, 0.5f, 0.5f);
+		this.groundBox.update();
+		this.groundBox.setSpriteColor(Color.DARK_GRAY);
 
-		PolygonShape shape = new PolygonShape();
-		shape.setAsBox(VIEWPORT_WIDTH, 1);
-
-		FixtureDef fd = new FixtureDef();
-		fd.density = 1;
-		fd.friction = 0.5f;
-		fd.restitution = 0.5f;
-		fd.shape = shape;
-
-		world.createBody(bd).createFixture(fd);
-
-		shape.dispose();
 	}
 
 	private void createBalls() {
-		BodyDef ballBodyDef = new BodyDef();
-		ballBodyDef.type = BodyType.DynamicBody;
 
-		CircleShape shape = new CircleShape();
-		shape.setRadius(BALL_RADIUS);
-
-		FixtureDef fd = new FixtureDef();
-		fd.density = 1;
-		fd.friction = 0.5f;
-		fd.restitution = 0.5f;
-		fd.shape = shape;
-		fd.filter.groupIndex = GROUP_BALLS;
-
-		ballModels = new Body[MAX_BALLS];
+		this.balls = new CircleObject[MAX_BALLS];
 		for (int i = 0; i < MAX_BALLS; i++) {
-			ballModels[i] = world.createBody(ballBodyDef);
-			ballModels[i].createFixture(fd);
-		}
+			this.balls[i] = new CircleObject(new Vector2(0, 0), world, 2,
+					GROUP_BALLS, BodyType.DynamicBody, 0, ballTexture);
+			this.balls[i].setFixture(BALL_RADIUS, 1, 0.5f, 0.5f);
 
-		shape.dispose();
+		}
 	}
 
 	private void createBottle() {
 		// 0. Create a loader for the file saved from the editor.
 		BodyEditorLoader loader = new BodyEditorLoader(
 				Gdx.files.internal("data/test.json"));
+		this.bottle = new CustomObject(new Vector2(0, 0), world, 5,
+				GROUP_Things, BodyType.DynamicBody, 0, bottleTexture);
+		this.bottle.setFixture(BOTTLE_WIDTH, 1, 0.5f, 0.3f, loader, "test01");
 
-		// 1. Create a BodyDef, as usual.
-		BodyDef bd = new BodyDef();
-		bd.type = BodyType.DynamicBody;
-
-		// 2. Create a FixtureDef, as usual.
-		FixtureDef fd = new FixtureDef();
-		fd.density = 1;
-		fd.friction = 0.5f;
-		fd.restitution = 0.3f;
-		fd.filter.groupIndex = GROUP_Things;
-
-		// 3. Create a Body, as usual.
-		bottleModel = world.createBody(bd);
-
-		// 4. Create the body fixture automatically by using the loader.
-		loader.attachFixture(bottleModel, "test01", fd, BOTTLE_WIDTH);
-		bottleModelOrigin = loader.getOrigin("test01", BOTTLE_WIDTH).cpy();
-	}
-
-	private void createSprites() {
-
-		bottleTexture = new Texture(Gdx.files.internal("data/gfx/bottle.png"));
-		bottleTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
-
-		bottleSprite = new Sprite(bottleTexture);
-		bottleSprite.setSize(
-				BOTTLE_WIDTH,
-				BOTTLE_WIDTH * bottleSprite.getHeight()
-						/ bottleSprite.getWidth());
-
-		ballTexture = new Texture(Gdx.files.internal("data/gfx/ball.png"));
-		ballTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
-
-		ballSprites = new Sprite[MAX_BALLS];
-		for (int i = 0; i < MAX_BALLS; i++) {
-			ballSprites[i] = new Sprite(ballTexture);
-			ballSprites[i].setSize(BALL_RADIUS * 2, BALL_RADIUS * 2);
-			ballSprites[i].setOrigin(BALL_RADIUS, BALL_RADIUS);
-		}
-
-		groundSprite = new Sprite(whiteTexture);
-		groundSprite.setSize(VIEWPORT_WIDTH, 1);
-		groundSprite.setPosition(-VIEWPORT_WIDTH / 2, 0);
-		groundSprite.setColor(Color.BLUE);
-
-		// boxSprite = new Sprite(whiteTexture);
-		// boxSprite.setSize(BOX_WIDTH * 2, BOX_WIDTH * 2);
-		// boxSprite.setOrigin(BOX_WIDTH, BOX_WIDTH);
-		// boxSprite.setColor(Color.RED);
-		this.squareObject.setSpriteColor(Color.RED);
 	}
 
 	@Override
@@ -279,31 +185,16 @@ public class JPhys extends ApplicationAdapter {
 		world.step(1 / 60f, 10, 10);
 
 		if (doBottle) {
-			Vector2 bottlePos = bottleModel.getPosition()
-					.sub(bottleModelOrigin);
-			bottleSprite.setPosition(bottlePos.x, bottlePos.y);
-			bottleSprite.setOrigin(bottleModelOrigin.x, bottleModelOrigin.y);
-			bottleSprite.setRotation(bottleModel.getAngle()
-					* MathUtils.radiansToDegrees);
+			this.bottle.update();
 		}
 
 		if (doBox) {
-			// Vector2 boxPos = boxModel.getPosition();
-			// boxSprite.setPosition(boxPos.x - boxSprite.getWidth() / 2,
-			// boxPos.y
-			// - boxSprite.getHeight() / 2);
-			// boxSprite.setRotation(boxModel.getAngle()
-			// * MathUtils.radiansToDegrees);
-			squareObject.update();
-			rectObject.update();
+			squareBox.update();
+			rectBox.update();
 		}
 
 		for (int i = 0; i < MAX_BALLS; i++) {
-			Vector2 ballPos = ballModels[i].getPosition();
-			ballSprites[i].setPosition(ballPos.x - ballSprites[i].getWidth()
-					/ 2, ballPos.y - ballSprites[i].getHeight() / 2);
-			ballSprites[i].setRotation(ballModels[i].getAngle()
-					* MathUtils.radiansToDegrees);
+			this.balls[i].update();
 		}
 
 		// Render
@@ -313,17 +204,16 @@ public class JPhys extends ApplicationAdapter {
 
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
-		groundSprite.draw(batch);
+		this.groundBox.draw(batch);
 		if (doBottle)
-			bottleSprite.draw(batch);
+			this.bottle.draw(batch);
 		if (doBox) {
-			// boxSprite.draw(batch);
-			squareObject.draw(batch);
-			rectObject.draw(batch);
+			squareBox.draw(batch);
+			rectBox.draw(batch);
 		}
 
 		for (int i = 0; i < MAX_BALLS; i++)
-			ballSprites[i].draw(batch);
+			balls[i].draw(batch);
 		batch.end();
 
 		batch.getProjectionMatrix().setToOrtho2D(0, 0, w, h);
@@ -338,7 +228,7 @@ public class JPhys extends ApplicationAdapter {
 
 	private void pushBalls(Vector2 vector2) {
 		for (int i = 0; i < MAX_BALLS; i++) {
-			ballModels[i].applyForceToCenter(vector2);
+			this.balls[i].getBody().applyForceToCenter(vector2);
 
 		}
 
@@ -347,15 +237,9 @@ public class JPhys extends ApplicationAdapter {
 	private void restart() {
 
 		if (doBottle) {
-			bottleModel.setTransform(0, 2, 0.1f);
-			bottleModel.setLinearVelocity(0, 0);
-			bottleModel.setAngularVelocity(0);
-		}
-
-		if (doBox) {
-			// boxModel.setTransform(5, 3, 0.1f);
-			// boxModel.setLinearVelocity(0, 0);
-			// boxModel.setAngularVelocity(0);
+			this.bottle.getBody().setTransform(0, 2, 0.1f);
+			this.bottle.getBody().setLinearVelocity(0, 0);
+			this.bottle.getBody().setAngularVelocity(0);
 		}
 
 		Vector2 vec = new Vector2();
@@ -366,10 +250,10 @@ public class JPhys extends ApplicationAdapter {
 					+ BALL_RADIUS;
 			float angle = rand.nextFloat() * MathUtils.PI * 2;
 
-			ballModels[i].setActive(false);
-			ballModels[i].setLinearVelocity(vec.set(0, 0));
-			ballModels[i].setAngularVelocity(0);
-			ballModels[i].setTransform(vec.set(tx, ty), angle);
+			this.balls[i].getBody().setActive(false);
+			this.balls[i].getBody().setLinearVelocity(vec.set(0, 0));
+			this.balls[i].getBody().setAngularVelocity(0);
+			this.balls[i].getBody().setTransform(vec.set(tx, ty), angle);
 		}
 
 		tweenManager.killAll();
@@ -379,9 +263,9 @@ public class JPhys extends ApplicationAdapter {
 
 			@Override
 			public void onEvent(int type, BaseTween<?> source) {
-				if (idx < ballModels.length) {
-					ballModels[idx].setAwake(true);
-					ballModels[idx].setActive(true);
+				if (idx < balls.length) {
+					balls[idx].getBody().setAwake(true);
+					balls[idx].getBody().setActive(true);
 					idx += 1;
 				}
 			}

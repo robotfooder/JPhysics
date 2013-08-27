@@ -1,8 +1,9 @@
 package com.jcode.jphys.physics;
 
-
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -37,7 +38,7 @@ public class BaseBoxObject {
 		createBody(world, pos, angle, bodyType);
 		this.body.setUserData(this.userData);
 		this.sprite = new Sprite(texture);
-		this.spriteRatio = this.sprite.getHeight()/this.sprite.getWidth();
+		this.spriteRatio = this.sprite.getHeight() / this.sprite.getWidth();
 
 	}
 
@@ -59,6 +60,21 @@ public class BaseBoxObject {
 	protected void updateWorldPosition() {
 		worldPosition.set(this.body.getPosition().x - this.sprite.getWidth()
 				/ 2, this.body.getPosition().y - this.sprite.getHeight() / 2);
+	}
+
+	public void draw(SpriteBatch sp) {
+		this.sprite.draw(sp);
+	}
+
+	public void update() {
+		updateWorldPosition();
+		this.sprite.setPosition(this.worldPosition.x, this.worldPosition.y);
+		this.sprite.setRotation(this.body.getAngle()
+				* MathUtils.radiansToDegrees);
+	}
+
+	public Body getBody() {
+		return body;
 	}
 
 }
