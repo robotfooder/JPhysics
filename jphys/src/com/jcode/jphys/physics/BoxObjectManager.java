@@ -51,14 +51,14 @@ public class BoxObjectManager {
 		return temp;
 	}
 
-	public void Draw(SpriteBatch sp) {
+	public void draw(SpriteBatch sp) {
 		for (BaseBoxObject obj : rectObjects) {
 			obj.draw(sp);
 		}
-		for (BaseBoxObject obj : circleObjects) {
+		for (BaseBoxObject obj : customObjects) {
 			obj.draw(sp);
 		}
-		for (BaseBoxObject obj : customObjects) {
+		for (BaseBoxObject obj : circleObjects) {
 			obj.draw(sp);
 		}
 	}
@@ -85,5 +85,17 @@ public class BoxObjectManager {
 
 	public void dispose() {
 		world.dispose();
+	}
+
+	public ArrayList<BaseBoxObject> getRectObjects() {
+		return rectObjects;
+	}
+
+	public ArrayList<BaseBoxObject> getCircleObjects() {
+		return circleObjects;
+	}
+
+	public ArrayList<BaseBoxObject> getCustomObjects() {
+		return customObjects;
 	}
 }

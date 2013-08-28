@@ -22,7 +22,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
-import com.badlogic.gdx.physics.box2d.World;
+import com.jcode.jphys.physics.BaseBoxObject;
 import com.jcode.jphys.physics.BoxObjectManager;
 import com.jcode.jphys.physics.CircleObject;
 import com.jcode.jphys.physics.CustomObject;
@@ -41,16 +41,10 @@ public class JPhys extends ApplicationAdapter {
 	private static final float RECT_WIDTH = 2;
 	private static final int MAX_BALLS = 15;
 
-	// Models
-	// private World world;
-	//private CircleObject[] balls;
-	//private RectObject squareBox;
-	//private RectObject rectBox;
-	//private RectObject groundBox;
-	//private CustomObject bottle;
+	// Object handler
 	private BoxObjectManager boxObjectManager;
 
-	// Render
+	// Textures
 	private Texture bottleTexture;
 	private Texture ballTexture;
 	private Texture whiteTexture;
@@ -74,9 +68,11 @@ public class JPhys extends ApplicationAdapter {
 
 	@Override
 	public void create() {
-		// Models initialization
 
-		// world = new World(new Vector2(0, -10), true);
+		// create box object manager
+		this.boxObjectManager = new BoxObjectManager(new Vector2(0, -10));
+
+		// load textures
 		whiteTexture = new Texture(Gdx.files.internal("data/gfx/white.png"));
 		rectTexture = new Texture(Gdx.files.internal("data/gfx/rect.png"));
 		rectTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
@@ -85,18 +81,10 @@ public class JPhys extends ApplicationAdapter {
 		bottleTexture = new Texture(Gdx.files.internal("data/gfx/bottle.png"));
 		bottleTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 
+		// Models initialization
 		createBoxObjects();
 
-		// createGround();
-		// if (doBottle)
-		// createBottle(); // <-- this method uses the BodyEditorLoader
-		// class
-		// createBalls();
-		// if (doBox)
-		// createBoxes();
-
 		// Render initialization
-
 		batch = new SpriteBatch();
 		font = new BitmapFont();
 		font.setColor(Color.BLACK);
@@ -127,7 +115,6 @@ public class JPhys extends ApplicationAdapter {
 
 	private void createBoxObjects() {
 
-		this.boxObjectManager = new BoxObjectManager(new Vector2(0, -10));
 		// ground
 		RectObject ground = (RectObject) this.boxObjectManager.AddObject(
 				new Vector2(0, 0.5f), RECT_OBJECT, 0, BodyType.StaticBody, 0,
@@ -173,50 +160,6 @@ public class JPhys extends ApplicationAdapter {
 
 	}
 
-	// private void createBoxes() {
-	//
-	// this.squareBox = new RectObject(new Vector2(5, 3), world, 0,
-	// GROUP_Things, BodyType.StaticBody, 0.1f, whiteTexture);
-	// this.squareBox.setFixture(SQUARE_WIDTH, SQUARE_WIDTH, 1, 0.5f, 0.5f);
-	// this.squareBox.setSpriteColor(Color.RED);
-	//
-	// this.rectBox = new RectObject(new Vector2(0, 5), world, 1, 0,
-	// BodyType.KinematicBody, 0.2f, rectTexture);
-	// this.rectBox.setFixture(RECT_WIDTH, 1, 0.5f, 0.5f);
-	// this.rectBox.spinning(0.8f);
-	//
-	// }
-
-	// private void createGround() {
-	// this.groundBox = new RectObject(new Vector2(0, 0.5f), world, 4,
-	// GROUP_Things, BodyType.StaticBody, 0, whiteTexture);
-	// this.groundBox.setFixture(VIEWPORT_WIDTH, 0.5f, 1, 0.5f, 0.5f);
-	// this.groundBox.update();
-	// this.groundBox.setSpriteColor(Color.DARK_GRAY);
-	//
-	// }
-
-	// private void createBalls() {
-	//
-	// this.balls = new CircleObject[MAX_BALLS];
-	// for (int i = 0; i < MAX_BALLS; i++) {
-	// this.balls[i] = new CircleObject(new Vector2(0, 0), world, 2,
-	// GROUP_BALLS, BodyType.DynamicBody, 0, ballTexture);
-	// this.balls[i].setFixture(BALL_RADIUS, 1, 0.5f, 0.5f);
-	//
-	// }
-	// }
-
-	// private void createBottle() {
-	// // 0. Create a loader for the file saved from the editor.
-	// BodyEditorLoader loader = new BodyEditorLoader(
-	// Gdx.files.internal("data/test.json"));
-	// this.bottle = new CustomObject(new Vector2(0, 0), world, 5,
-	// GROUP_Things, BodyType.DynamicBody, 0, bottleTexture);
-	// this.bottle.setFixture(BOTTLE_WIDTH, 1, 0.5f, 0.3f, loader, "test01");
-	//
-	// }
-
 	@Override
 	public void dispose() {
 		bottleTexture.dispose();
@@ -225,7 +168,6 @@ public class JPhys extends ApplicationAdapter {
 		rectTexture.dispose();
 		batch.dispose();
 		font.dispose();
-		// world.dispose();
 		this.boxObjectManager.dispose();
 	}
 
@@ -245,20 +187,7 @@ public class JPhys extends ApplicationAdapter {
 		// Update
 		tweenManager.update(1 / 60f);
 		this.boxObjectManager.stepWorld(1 / 60f, 10, 10);
-		// world.step(1 / 60f, 10, 10);
 
-		// if (doBottle) {
-		// this.bottle.update();
-		// }
-		//
-		// if (doBox) {
-		// squareBox.update();
-		// rectBox.update();
-		// }
-		//
-		// for (int i = 0; i < MAX_BALLS; i++) {
-		// this.balls[i].update();
-		// }
 		this.boxObjectManager.Update();
 
 		// Render
@@ -268,17 +197,8 @@ public class JPhys extends ApplicationAdapter {
 
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
-		// this.groundBox.draw(batch);
-		// if (doBottle)
-		// this.bottle.draw(batch);
-		// if (doBox) {
-		// squareBox.draw(batch);
-		// rectBox.draw(batch);
-		// }
-		//
-		// for (int i = 0; i < MAX_BALLS; i++)
-		// balls[i].draw(batch);
-		this.boxObjectManager.Draw(batch);
+
+		this.boxObjectManager.draw(batch);
 		batch.end();
 
 		batch.getProjectionMatrix().setToOrtho2D(0, 0, w, h);
@@ -292,9 +212,8 @@ public class JPhys extends ApplicationAdapter {
 	}
 
 	private void pushBalls(Vector2 vector2) {
-		for (int i = 0; i < MAX_BALLS; i++) {
-			this.balls[i].getBody().applyForceToCenter(vector2);
-
+		for (BaseBoxObject obj : this.boxObjectManager.getCircleObjects()) {
+			obj.getBody().applyForceToCenter(vector2);
 		}
 
 	}
@@ -302,23 +221,25 @@ public class JPhys extends ApplicationAdapter {
 	private void restart() {
 
 		if (doBottle) {
-			this.bottle.getBody().setTransform(0, 2, 0.1f);
-			this.bottle.getBody().setLinearVelocity(0, 0);
-			this.bottle.getBody().setAngularVelocity(0);
+			for (BaseBoxObject obj : this.boxObjectManager.getCustomObjects()) {
+				obj.getBody().setTransform(0, 2, 0.1f);
+				obj.getBody().setLinearVelocity(0, 0);
+				obj.getBody().setAngularVelocity(0);
+			}
 		}
 
 		Vector2 vec = new Vector2();
 
-		for (int i = 0; i < MAX_BALLS; i++) {
+		for (BaseBoxObject obj : this.boxObjectManager.getCircleObjects()) {
 			float tx = rand.nextFloat() * 1.0f - 0.5f;
 			float ty = camera.position.y + camera.viewportHeight / 2
 					+ BALL_RADIUS;
 			float angle = rand.nextFloat() * MathUtils.PI * 2;
 
-			this.balls[i].getBody().setActive(false);
-			this.balls[i].getBody().setLinearVelocity(vec.set(0, 0));
-			this.balls[i].getBody().setAngularVelocity(0);
-			this.balls[i].getBody().setTransform(vec.set(tx, ty), angle);
+			obj.getBody().setActive(false);
+			obj.getBody().setLinearVelocity(vec.set(0, 0));
+			obj.getBody().setAngularVelocity(0);
+			obj.getBody().setTransform(vec.set(tx, ty), angle);
 		}
 
 		tweenManager.killAll();
@@ -328,9 +249,11 @@ public class JPhys extends ApplicationAdapter {
 
 			@Override
 			public void onEvent(int type, BaseTween<?> source) {
-				if (idx < balls.length) {
-					balls[idx].getBody().setAwake(true);
-					balls[idx].getBody().setActive(true);
+				if (idx < boxObjectManager.getCircleObjects().size()) {
+					BaseBoxObject obj = boxObjectManager.getCircleObjects()
+							.get(idx);
+					obj.getBody().setAwake(true);
+					obj.getBody().setActive(true);
 					idx += 1;
 				}
 			}
