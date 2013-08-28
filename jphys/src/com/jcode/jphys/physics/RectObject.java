@@ -18,8 +18,10 @@ public class RectObject extends BaseBoxObject {
 	private float width;
 
 	public RectObject(Vector2 pos, World world, int boxIndex,
-			int collisionGroup, BodyType bodyType, float angle, Texture texture) {
-		super(pos, world, boxIndex, collisionGroup, bodyType, angle, texture);
+			int collisionGroup, BodyType bodyType, float angle,
+			Texture texture, int objectType) {
+		super(pos, world, boxIndex, collisionGroup, bodyType, angle, texture,
+				objectType);
 
 	}
 
@@ -70,6 +72,10 @@ public class RectObject extends BaseBoxObject {
 
 	public float getWidth() {
 		return width;
+	}
+
+	public void spinning(float speed) {
+		this.body.setAngularVelocity(speed);
 	}
 
 }

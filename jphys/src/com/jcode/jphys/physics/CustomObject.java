@@ -14,8 +14,10 @@ public class CustomObject extends BaseBoxObject {
 	private Vector2 customModelOrigin;
 
 	public CustomObject(Vector2 pos, World world, int boxIndex,
-			int collisionGroup, BodyType bodyType, float angle, Texture texture) {
-		super(pos, world, boxIndex, collisionGroup, bodyType, angle, texture);
+			int collisionGroup, BodyType bodyType, float angle,
+			Texture texture, int objectType) {
+		super(pos, world, boxIndex, collisionGroup, bodyType, angle, texture,
+				objectType);
 
 	}
 

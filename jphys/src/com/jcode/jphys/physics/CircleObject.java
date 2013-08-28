@@ -8,18 +8,18 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 
 public class CircleObject extends BaseBoxObject {
-	
-	
 
 	public CircleObject(Vector2 pos, World world, int boxIndex,
-			int collisionGroup, BodyType bodyType, float angle, Texture texture) {
-		super(pos, world, boxIndex, collisionGroup, bodyType, angle, texture);
+			int collisionGroup, BodyType bodyType, float angle,
+			Texture texture, int objectType) {
+		super(pos, world, boxIndex, collisionGroup, bodyType, angle, texture,
+				objectType);
 		// TODO Auto-generated constructor stub
 	}
-	
+
 	public void setFixture(float radius, float density, float friction,
 			float restitution) {
-	
+
 		CircleShape shape = new CircleShape();
 		shape.setRadius(radius);
 
@@ -29,7 +29,7 @@ public class CircleObject extends BaseBoxObject {
 		fd.restitution = restitution;
 		fd.shape = shape;
 		super.setFixture(fd);
-		
+
 		this.sprite.setSize(radius * 2, radius * 2);
 		this.sprite.setOrigin(radius, radius);
 

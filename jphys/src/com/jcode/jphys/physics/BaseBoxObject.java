@@ -19,9 +19,14 @@ public class BaseBoxObject {
 	protected Sprite sprite;
 	protected int bodyShape;
 	protected float spriteRatio;
+	protected int objectType;
+
+	
 
 	static final float WORLD_TO_BOX = 0.01f;
 	static final float BOX_TO_WORLD = 100f;
+	
+
 
 	// protected float convertToBox(float x) {
 	// return x * WORLD_TO_BOX;
@@ -32,13 +37,14 @@ public class BaseBoxObject {
 	// }
 
 	public BaseBoxObject(Vector2 pos, World world, int boxIndex,
-			int collisionGroup, BodyType bodyType, float angle, Texture texture) {
+			int collisionGroup, BodyType bodyType, float angle, Texture texture, int objectType) {
 		this.userData = new BoxUserData(boxIndex, collisionGroup);
 		this.worldPosition = new Vector2();
 		createBody(world, pos, angle, bodyType);
 		this.body.setUserData(this.userData);
 		this.sprite = new Sprite(texture);
 		this.spriteRatio = this.sprite.getHeight() / this.sprite.getWidth();
+		this.objectType = objectType;
 
 	}
 
@@ -51,7 +57,7 @@ public class BaseBoxObject {
 		this.body = world.createBody(bodyDef);
 	}
 
-	public void setFixture(FixtureDef fixtureDef) {
+	protected void setFixture(FixtureDef fixtureDef) {
 		this.body.createFixture(fixtureDef);
 		fixtureDef.shape.dispose();
 
@@ -75,6 +81,10 @@ public class BaseBoxObject {
 
 	public Body getBody() {
 		return body;
+	}
+	
+	public int getObjectType() {
+		return objectType;
 	}
 
 }
