@@ -7,7 +7,6 @@ import aurelienribon.tweenengine.BaseTween;
 import aurelienribon.tweenengine.Tween;
 import aurelienribon.tweenengine.TweenCallback;
 import aurelienribon.tweenengine.TweenManager;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -65,22 +64,24 @@ public class JPhys extends ApplicationAdapter {
 	public static final int RECT_OBJECT = 0;
 	public static final int CIRCLE_OBJECT = 1;
 	public static final int CUSTOM_OBJECT = 2;
+	float CAMWIDTH;
+	float CAMHEIGHT;
+	float CAMSTARTX;
+	float CAMSTARTY;
+	private float accumulator;
 
 	@Override
 	public void create() {
 
+		this.camera = CameraHelper.GetCamera(GlobalSettings.VIRTUAL_WIDTH,
+				GlobalSettings.VIRTUAL_HEIGHT);
+		setupZoom();
+		this.camera.update();
+
 		// create box object manager
 		this.boxObjectManager = new BoxObjectManager(new Vector2(0, -10));
-
 		// load textures
-		whiteTexture = new Texture(Gdx.files.internal("data/gfx/white.png"));
-		rectTexture = new Texture(Gdx.files.internal("data/gfx/rect.png"));
-		rectTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
-		ballTexture = new Texture(Gdx.files.internal("data/gfx/ball.png"));
-		ballTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
-		bottleTexture = new Texture(Gdx.files.internal("data/gfx/bottle.png"));
-		bottleTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
-
+		loadTextures();
 		// Models initialization
 		createBoxObjects();
 
@@ -88,14 +89,6 @@ public class JPhys extends ApplicationAdapter {
 		batch = new SpriteBatch();
 		font = new BitmapFont();
 		font.setColor(Color.BLACK);
-
-		float w = Gdx.graphics.getWidth();
-		float h = Gdx.graphics.getHeight();
-
-		camera = new OrthographicCamera(VIEWPORT_WIDTH, VIEWPORT_WIDTH * h / w);
-		camera.position.set(0, camera.viewportHeight / 2, 0);
-
-		camera.update();
 
 		// Input initialization
 
@@ -111,6 +104,43 @@ public class JPhys extends ApplicationAdapter {
 		// Run
 
 		restart();
+	}
+
+	private void loadTextures() {
+
+		whiteTexture = new Texture(Gdx.files.internal("data/gfx/white.png"));
+		rectTexture = new Texture(Gdx.files.internal("data/gfx/rect.png"));
+		rectTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+		ballTexture = new Texture(Gdx.files.internal("data/gfx/ball.png"));
+		ballTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+		bottleTexture = new Texture(Gdx.files.internal("data/gfx/bottle.png"));
+		bottleTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+
+	}
+
+	void setupZoom() {
+		int virtualAsp = GlobalSettings.VIRTUAL_WIDTH
+				/ GlobalSettings.VIRTUAL_HEIGHT;
+		int realAsp = Gdx.graphics.getWidth() / Gdx.graphics.getHeight();
+		if (realAsp == virtualAsp) {
+			CAMWIDTH = Gdx.graphics.getWidth();
+			CAMHEIGHT = Gdx.graphics.getHeight();
+			CAMSTARTX = 0;
+			CAMSTARTY = 0;
+		} else if (realAsp < virtualAsp) {
+			CAMWIDTH = Gdx.graphics.getWidth();
+			CAMHEIGHT = GlobalSettings.VIRTUAL_HEIGHT
+					* (Gdx.graphics.getWidth() / GlobalSettings.VIRTUAL_WIDTH);
+			CAMSTARTX = 0;
+			CAMSTARTY = (Gdx.graphics.getHeight() - CAMHEIGHT) / 2f;
+
+		} else if (realAsp > virtualAsp) {
+			CAMWIDTH = GlobalSettings.VIRTUAL_WIDTH
+					* (Gdx.graphics.getHeight() / GlobalSettings.VIRTUAL_HEIGHT);
+			CAMHEIGHT = Gdx.graphics.getHeight();
+			CAMSTARTY = 0;
+			CAMSTARTX = (Gdx.graphics.getWidth() - CAMWIDTH) / 2f;
+		}
 	}
 
 	private void createBoxObjects() {
@@ -173,24 +203,20 @@ public class JPhys extends ApplicationAdapter {
 
 	@Override
 	public void render() {
+		float dt=Gdx.graphics.getDeltaTime();
+		handleInput();
+		// Update
+		update(dt);
+		// render
+		renderObjects();
+
+	}
+
+	private void renderObjects() {
+		// Render
 		float w = Gdx.graphics.getWidth();
 		float h = Gdx.graphics.getHeight();
 
-		if (Gdx.input.isKeyPressed(Keys.DPAD_LEFT)) {
-			pushBalls(new Vector2(-2, 0));
-		}
-
-		if (Gdx.input.isKeyPressed(Keys.DPAD_RIGHT)) {
-			pushBalls(new Vector2(2, 0));
-		}
-
-		// Update
-		tweenManager.update(1 / 60f);
-		this.boxObjectManager.stepWorld(1 / 60f, 10, 10);
-
-		this.boxObjectManager.Update();
-
-		// Render
 		GL10 gl = Gdx.gl10;
 		gl.glClearColor(1, 1, 1, 1);
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
@@ -209,6 +235,31 @@ public class JPhys extends ApplicationAdapter {
 		// + ballModels[i].getLinearVelocity().toString() + " Angle: "
 		// + ballModels[i].getAngle(), 5, h - (i + 2) * 15);
 		batch.end();
+
+	}
+
+	private void update(float dt) {
+		accumulator+=dt;
+		while(accumulator>dt){
+			tweenManager.update(GlobalSettings.BOX_STEP);
+			this.boxObjectManager.stepWorld(GlobalSettings.BOX_STEP,GlobalSettings.VELOCITY_ITERATIONS, GlobalSettings.POSITION_ITERATIONS);
+			accumulator-=GlobalSettings.BOX_STEP;
+		}
+		
+
+		this.boxObjectManager.Update();
+
+	}
+
+	private void handleInput() {
+		if (Gdx.input.isKeyPressed(Keys.DPAD_LEFT)) {
+			pushBalls(new Vector2(-2, 0));
+		}
+
+		if (Gdx.input.isKeyPressed(Keys.DPAD_RIGHT)) {
+			pushBalls(new Vector2(2, 0));
+		}
+
 	}
 
 	private void pushBalls(Vector2 vector2) {
