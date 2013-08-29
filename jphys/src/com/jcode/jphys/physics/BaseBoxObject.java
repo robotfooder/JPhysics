@@ -20,13 +20,10 @@ public class BaseBoxObject {
 	protected int bodyShape;
 	protected float spriteRatio;
 	protected int objectType;
-
-	
+	protected boolean isActive;
 
 	static final float WORLD_TO_BOX = 0.01f;
 	static final float BOX_TO_WORLD = 100f;
-	
-
 
 	// protected float convertToBox(float x) {
 	// return x * WORLD_TO_BOX;
@@ -37,7 +34,8 @@ public class BaseBoxObject {
 	// }
 
 	public BaseBoxObject(Vector2 pos, World world, int boxIndex,
-			int collisionGroup, BodyType bodyType, float angle, Texture texture, int objectType) {
+			int collisionGroup, BodyType bodyType, float angle,
+			Texture texture, int objectType) {
 		this.userData = new BoxUserData(boxIndex, collisionGroup);
 		this.worldPosition = new Vector2();
 		createBody(world, pos, angle, bodyType);
@@ -82,9 +80,16 @@ public class BaseBoxObject {
 	public Body getBody() {
 		return body;
 	}
-	
+
 	public int getObjectType() {
 		return objectType;
+	}
+
+	public void destroy(World world) {
+		if (isActive) {
+			world.destroyBody(body);
+			isActive = false;
+		}
 	}
 
 }
