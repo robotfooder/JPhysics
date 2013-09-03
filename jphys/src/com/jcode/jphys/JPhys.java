@@ -25,6 +25,7 @@ import com.jcode.jphys.physics.BaseBoxObject;
 import com.jcode.jphys.physics.BoxObjectManager;
 import com.jcode.jphys.physics.CircleObject;
 import com.jcode.jphys.physics.CustomObject;
+import com.jcode.jphys.physics.PathObject;
 import com.jcode.jphys.physics.RectObject;
 
 public class JPhys extends ApplicationAdapter {
@@ -64,6 +65,7 @@ public class JPhys extends ApplicationAdapter {
 	public static final int RECT_OBJECT = 0;
 	public static final int CIRCLE_OBJECT = 1;
 	public static final int CUSTOM_OBJECT = 2;
+	public static final int PATH_OBJECT = 3;
 	float CAMWIDTH;
 	float CAMHEIGHT;
 	float CAMSTARTX;
@@ -146,7 +148,7 @@ public class JPhys extends ApplicationAdapter {
 	private void createBoxObjects() {
 
 		// ground
-		RectObject ground = (RectObject) this.boxObjectManager.AddObject(
+		RectObject ground = (RectObject) this.boxObjectManager.addObject(
 				new Vector2(0, 0.5f), RECT_OBJECT, 0, BodyType.StaticBody, 0,
 				whiteTexture, GROUP_Things);
 		ground.setFixture(VIEWPORT_WIDTH, 0.5f, 1, 0.5f, 0.5f);
@@ -155,14 +157,20 @@ public class JPhys extends ApplicationAdapter {
 
 		if (this.doBox) {
 			// square
-			RectObject square = (RectObject) this.boxObjectManager.AddObject(
-					new Vector2(5, 3), RECT_OBJECT, 1, BodyType.StaticBody,
+			PathObject square = (PathObject) this.boxObjectManager.addObject(
+					new Vector2(5, 3), PATH_OBJECT, 1, BodyType.KinematicBody,
 					0.1f, whiteTexture, GROUP_Things);
 			square.setFixture(SQUARE_WIDTH, SQUARE_WIDTH, 1, 0.5f, 0.5f);
 			square.setSpriteColor(Color.RED);
+			Path p = new Path(4);
+			p.addPoint(new Vector2(5, 3), 2f);
+			p.addPoint(new Vector2(-4, 1), 2f);
+			p.addPoint(new Vector2(-7, 7), 2f);
+			p.addPoint(new Vector2(6, 5), 2f);
+			square.setPath(p);
 
 			// rect
-			RectObject rect = (RectObject) this.boxObjectManager.AddObject(
+			RectObject rect = (RectObject) this.boxObjectManager.addObject(
 					new Vector2(0, 5), RECT_OBJECT, 2, BodyType.KinematicBody,
 					0.2f, rectTexture, GROUP_Things);
 			rect.setFixture(RECT_WIDTH, 1, 0.5f, 0.5f);
@@ -171,7 +179,7 @@ public class JPhys extends ApplicationAdapter {
 
 		// balls
 		for (int i = 0; i < MAX_BALLS; i++) {
-			CircleObject ball = (CircleObject) this.boxObjectManager.AddObject(
+			CircleObject ball = (CircleObject) this.boxObjectManager.addObject(
 					new Vector2(0, 0), CIRCLE_OBJECT, i + 3,
 					BodyType.DynamicBody, 0, ballTexture, GROUP_BALLS);
 			ball.setFixture(BALL_RADIUS, 1, 0.5f, 0.5f);
@@ -182,7 +190,7 @@ public class JPhys extends ApplicationAdapter {
 			BodyEditorLoader loader = new BodyEditorLoader(
 					Gdx.files.internal("data/test.json"));
 			CustomObject bottle = (CustomObject) this.boxObjectManager
-					.AddObject(new Vector2(0, 0), CUSTOM_OBJECT, MAX_BALLS + 4,
+					.addObject(new Vector2(0, 0), CUSTOM_OBJECT, MAX_BALLS + 4,
 							BodyType.DynamicBody, 0, bottleTexture,
 							GROUP_Things);
 			bottle.setFixture(BOTTLE_WIDTH, 1, 0.5f, 0.3f, loader, "test01");
@@ -203,7 +211,7 @@ public class JPhys extends ApplicationAdapter {
 
 	@Override
 	public void render() {
-		float dt=Gdx.graphics.getDeltaTime();
+		float dt = Gdx.graphics.getDeltaTime();
 		handleInput();
 		// Update
 		update(dt);
@@ -239,15 +247,16 @@ public class JPhys extends ApplicationAdapter {
 	}
 
 	private void update(float dt) {
-		accumulator+=dt;
-		while(accumulator>dt){
+		accumulator += dt;
+		while (accumulator > dt) {
 			tweenManager.update(GlobalSettings.BOX_STEP);
-			this.boxObjectManager.stepWorld(GlobalSettings.BOX_STEP,GlobalSettings.VELOCITY_ITERATIONS, GlobalSettings.POSITION_ITERATIONS);
-			accumulator-=GlobalSettings.BOX_STEP;
+			this.boxObjectManager.stepWorld(GlobalSettings.BOX_STEP,
+					GlobalSettings.VELOCITY_ITERATIONS,
+					GlobalSettings.POSITION_ITERATIONS);
+			accumulator -= GlobalSettings.BOX_STEP;
 		}
-		
 
-		this.boxObjectManager.Update();
+		this.boxObjectManager.update();
 
 	}
 

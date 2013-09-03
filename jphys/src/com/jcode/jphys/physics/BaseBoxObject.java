@@ -1,5 +1,6 @@
 package com.jcode.jphys.physics;
 
+
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -90,6 +91,25 @@ public class BaseBoxObject {
 			world.destroyBody(body);
 			isActive = false;
 		}
+	}
+
+	public void setPosition(float wx, float wy) {
+
+		float angle = body.getAngle();
+		body.setTransform(wx, wy, angle);
+		updateWorldPosition();
+	}
+
+	public void setPosition(Vector2 v) {
+		setPosition(v.x, v.y);
+	}
+
+	public void setWorldVelocity(float vx, float vy) {
+		body.setLinearVelocity(vx, vy);
+	}
+	
+	public void setWorldVelocity(Vector2 v){
+		setWorldVelocity(v.x,v.y);
 	}
 
 }

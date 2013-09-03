@@ -32,7 +32,7 @@ public class BoxObjectManager implements ContactListener {
 
 	}
 
-	public BaseBoxObject AddObject(Vector2 pos, int objType, int boxIndex,
+	public BaseBoxObject addObject(Vector2 pos, int objType, int boxIndex,
 			BodyType bodyType, float angle, Texture texture, int collisionGroup) {
 		BaseBoxObject temp;
 		// CREATE different objects depending on the type considering we have to
@@ -41,6 +41,11 @@ public class BoxObjectManager implements ContactListener {
 		switch (objType) {
 		case JPhys.RECT_OBJECT:
 			temp = new RectObject(pos, world, boxIndex, collisionGroup,
+					bodyType, angle, texture, objType);
+			rectObjects.add(temp);
+			break;
+		case JPhys.PATH_OBJECT:
+			temp = new PathObject(pos, world, boxIndex, collisionGroup,
 					bodyType, angle, texture, objType);
 			rectObjects.add(temp);
 			break;
@@ -71,7 +76,7 @@ public class BoxObjectManager implements ContactListener {
 		}
 	}
 
-	public void Update() {
+	public void update() {
 
 		for (BaseBoxObject obj : rectObjects) {
 			obj.update();
