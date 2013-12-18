@@ -212,6 +212,7 @@ public class JPhys extends ApplicationAdapter {
 	@Override
 	public void render() {
 		float dt = Gdx.graphics.getDeltaTime();
+		
 		handleInput();
 		// Update
 		update(dt);
